@@ -37,7 +37,7 @@ procedure jeu(var t : tab; nomJoueur1, nomJoueur2 : string; var scoreJoueur1, sc
 var
   i, choix : integer;
   cas, e, maj, j   : integer;
-  lmd, rck         : string;
+  ega              : string;
   a                : boolean;
 
 function compare(valeur1, valeur2, valeur3 : string) : boolean;
@@ -50,6 +50,20 @@ begin
     end
   else
     compare := false;
+end;
+
+function gagne(t : tab) : char;
+var
+  i: integer;
+  all : string;
+begin
+  for i:=1 to 9 do
+    all := all + t[i]; 
+  if pos('111', all) <> 0 then
+    gagne := '1'
+  else
+    if pos('000', all) <> 0 then
+      gagne := '0';   
 end;
 
 procedure affichage(t : tab; scoreJoueur1, scoreJoueur2 : integer);
@@ -132,16 +146,25 @@ begin
      or compare(t[1], t[5], t[9]) or compare(t[3], t[5], t[7]) then
        begin
          a := false;
-         writeln('Gagne');
-       end; 
-  {else
-    for i:=1 to 9 do
-      begin
-        str(t[i], rck);
-        lmd = lmd + rck;
-        if length(lmd) = 9 then
-          writeln('Draw'); 
-      end; }
+         if gagne(t) = '1' then
+           begin
+             scoreJoueur1 := scoreJoueur1 + 1;
+             Writeln(nomJoueur1, ' vous avez gagner !'); 
+           end
+         else
+           begin
+             scoreJoueur2 := scoreJoueur2 + 1;
+             Writeln(nomJoueur2, ' vous avez gagner !'); 
+           end;
+       end 
+    else
+      for i:=1 to 9 do
+        begin
+          ega := ega + t[i];
+          if length(ega) = 9 then
+            a := false;
+            writeln('Draw'); 
+        end;
 
    end;
 end;
@@ -154,7 +177,8 @@ BEGIN
         joueur(nomJoueur1, symJoueur1, symJoueur1, 1);
         joueur(nomJoueur2, symJoueur2, symJoueur1, 2);
       end;
-
+    for i:=1 to 9 do
+      t[i] := '';
     jeu(t, nomJoueur1, nomJoueur2, scoreJoueur1, scoreJoueur2, symJoueur1, symJoueur2, tourJoueur1, tourJoueur2);
     write('Une autre partie [Y/n] -> ');
     read (rep); 
