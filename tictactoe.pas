@@ -8,7 +8,7 @@ type
   tab = array [1..9] of string;
   
 var
-  countPartie, i   : integer;
+  countPartie, i, scoreJoueur1, scoreJoueur2   : integer;
   nomJoueur1, nomJoueur2    : string;
   symJoueur1, symJoueur2, rep    : char;
   bool   : boolean;
@@ -31,43 +31,32 @@ begin
 end;
 
 
-procedure jeu(var t : tab; nomJoueur1, nomJoueur2 : string; symJoueur1, symJoueur2 : char);
+procedure jeu(var t : tab; nomJoueur1, nomJoueur2 : string; symJoueur1, symJoueur2 : char;
+               var scoreJoueur1, scoreJoueur2 : integer);
 var
   i, choix : integer;
-  e, scoreJoueur1, scoreJoueur2   : integer;
-  ega              : string;
+  e   : integer;
+  ega, st              : string;
   a, tourJoueur1, tourJoueur2                : boolean;
 
-function compare(valeur1, valeur2, valeur3 : string) : boolean;
+function compare(valeur1, valeur2, valeur3 : string; var st : string) : boolean;
 begin
-  (* writeln(valeur1, valeur2, valeur3); *)
-  if (valeur1 <> '') and (valeur2 <> '') and (valeur3 <> '') then
-    begin
+  compare := false;
+  (*writeln(valeur1, valeur2, valeur3); *)
+  if ((valeur1 <> '') and (valeur2 <> '')) and (valeur3 <> '') then
       if ((valeur1 = valeur2) and (valeur1 = valeur3)) and (valeur2 = valeur3) then
-        compare := true;
-    end
+        begin
+          compare := true;
+          st := valeur1;
+        end
   else
     compare := false;
 end;
 
-function gagne(t : tab) : char;
-var
-  i: integer;
-  all : string;
-begin
-  for i:=1 to 9 do
-    all := all + t[i]; 
-  if pos('111', all) <> 0 then
-    gagne := '1'
-  else
-    if pos('000', all) <> 0 then
-      gagne := '0';   
-end;
 
 procedure affichage(t : tab; scoreJoueur1, scoreJoueur2 : integer);
 var
   i, x, y: byte;
-  posi, e : integer;
 begin
   clrscr;
   write('       ', symJoueur1, ' % ', nomJoueur1, ' : ', scoreJoueur1, ' | ', 
@@ -139,12 +128,12 @@ begin
           until choix in [1..9];
         end;
     affichage(t, scoreJoueur1, scoreJoueur2);
-    if compare(t[1], t[2], t[3]) or compare(t[4], t[5], t[6]) or compare(t[7], t[8], t[9])
-     or compare(t[1], t[4], t[7]) or compare(t[2], t[5], t[8]) or compare(t[3], t[6], t[9])
-     or compare(t[1], t[5], t[9]) or compare(t[3], t[5], t[7]) then
+    if compare(t[1], t[2], t[3], st) or compare(t[4], t[5], t[6], st) or compare(t[7], t[8], t[9], st)
+     or compare(t[1], t[4], t[7], st) or compare(t[2], t[5], t[8], st) or compare(t[3], t[6], t[9], st)
+     or compare(t[1], t[5], t[9], st) or compare(t[3], t[5], t[7], st) then
        begin
          a := false;
-         if gagne(t) = '1' then
+         if st = '1' then
            begin
              scoreJoueur1 := scoreJoueur1 + 1;
              Writeln(nomJoueur1, ' vous avez gagner !'); 
@@ -154,16 +143,16 @@ begin
              scoreJoueur2 := scoreJoueur2 + 1;
              Writeln(nomJoueur2, ' vous avez gagner !'); 
            end;
-       end 
-    else
-      for i:=1 to 9 do
-        ega := ega + t[i];
-      if length(ega) = 9 then
-        begin
-          a := false;
-          writeln('Egalite !');
-        end;
+       end;
 
+     ega := '';
+     for i:=1 to 9 do
+       ega := ega + t[i];
+     if length(ega) = 9 then
+       begin
+         a := false;
+         writeln('Egalite !');
+       end;
 
    end;
 end;
@@ -178,7 +167,7 @@ BEGIN
       end;
     for i:=1 to 9 do
       t[i] := '';
-    jeu(t, nomJoueur1, nomJoueur2, symJoueur1, symJoueur2);
+    jeu(t, nomJoueur1, nomJoueur2, symJoueur1, symJoueur2, scoreJoueur1, scoreJoueur2);
     write('Une autre partie [Y/n] -> ');
     read (rep); 
     rep := upCase(rep);
