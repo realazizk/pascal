@@ -1,7 +1,6 @@
 program tictactoe;
 {
   Simple jeu realise par mohamed Aziz knani
-  (incomplet)
 }
 uses wincrt;
 
@@ -9,10 +8,10 @@ type
   tab = array [1..9] of string;
   
 var
-  countPartie, scoreJoueur1, scoreJoueur2, i   : integer;
+  countPartie, i   : integer;
   nomJoueur1, nomJoueur2    : string;
   symJoueur1, symJoueur2, rep    : char;
-  bool, tourJoueur1, tourJoueur2   : boolean;
+  bool   : boolean;
   t                         : tab;
   
 procedure joueur(var nom : string; var sym, symJoueur1 : char; nbJoueur : byte) ;
@@ -32,21 +31,20 @@ begin
 end;
 
 
-procedure jeu(var t : tab; nomJoueur1, nomJoueur2 : string; var scoreJoueur1, scoreJoueur2 : integer;
-                                  symJoueur1, symJoueur2 : char; tourJoueur1, tourJoueur2 : boolean);
+procedure jeu(var t : tab; nomJoueur1, nomJoueur2 : string; symJoueur1, symJoueur2 : char);
 var
   i, choix : integer;
-  cas, e, maj, j   : integer;
+  e, scoreJoueur1, scoreJoueur2   : integer;
   ega              : string;
-  a                : boolean;
+  a, tourJoueur1, tourJoueur2                : boolean;
 
 function compare(valeur1, valeur2, valeur3 : string) : boolean;
 begin
-  writeln(valeur1, valeur2, valeur3);
+  (* writeln(valeur1, valeur2, valeur3); *)
   if (valeur1 <> '') and (valeur2 <> '') and (valeur3 <> '') then
     begin
-      if (valeur1 = valeur2) and (valeur1 = valeur3) and (valeur2 = valeur3) then
-        compare := true
+      if ((valeur1 = valeur2) and (valeur1 = valeur3)) and (valeur2 = valeur3) then
+        compare := true;
     end
   else
     compare := false;
@@ -72,8 +70,8 @@ var
   posi, e : integer;
 begin
   clrscr;
-  write('       ', nomJoueur1, ' : ', scoreJoueur1, ' | ', 
-          nomJoueur2, ' : ', scoreJoueur2);
+  write('       ', symJoueur1, ' % ', nomJoueur1, ' : ', scoreJoueur1, ' | ', 
+         symJoueur2, ' % ', nomJoueur2, ' : ', scoreJoueur2);
   writeln;
   writeln;
   writeln('---|---|---');
@@ -92,7 +90,7 @@ begin
             4..6 : x := 6;
             7..9 : x := 8;
           end;
-          case choix of
+          case i of
             1, 4, 7 : y := 2;
             2, 5, 8 : y := 6;
             3, 6, 9 : y := 10;
@@ -140,7 +138,7 @@ begin
             tourJoueur1 := true;
           until choix in [1..9];
         end;
-
+    affichage(t, scoreJoueur1, scoreJoueur2);
     if compare(t[1], t[2], t[3]) or compare(t[4], t[5], t[6]) or compare(t[7], t[8], t[9])
      or compare(t[1], t[4], t[7]) or compare(t[2], t[5], t[8]) or compare(t[3], t[6], t[9])
      or compare(t[1], t[5], t[9]) or compare(t[3], t[5], t[7]) then
@@ -159,12 +157,13 @@ begin
        end 
     else
       for i:=1 to 9 do
+        ega := ega + t[i];
+      if length(ega) = 9 then
         begin
-          ega := ega + t[i];
-          if length(ega) = 9 then
-            a := false;
-            writeln('Draw'); 
+          a := false;
+          writeln('Egalite !');
         end;
+
 
    end;
 end;
@@ -179,7 +178,7 @@ BEGIN
       end;
     for i:=1 to 9 do
       t[i] := '';
-    jeu(t, nomJoueur1, nomJoueur2, scoreJoueur1, scoreJoueur2, symJoueur1, symJoueur2, tourJoueur1, tourJoueur2);
+    jeu(t, nomJoueur1, nomJoueur2, symJoueur1, symJoueur2);
     write('Une autre partie [Y/n] -> ');
     read (rep); 
     rep := upCase(rep);
