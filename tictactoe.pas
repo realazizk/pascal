@@ -63,13 +63,14 @@ begin
          symJoueur2, ' % ', nomJoueur2, ' : ', scoreJoueur2);
   writeln;
   writeln;
-  writeln('---|---|---');
-  writeln(' 1 | 2 | 3 ');
-  writeln('---|---|---');
-  writeln(' 4 | 5 | 6 ');
-  writeln('---|---|---');
-  writeln(' 7 | 8 | 9 ');
-  writeln('---|---|---');
+  writeln('                  ---|---|---');
+  writeln('                   1 | 2 | 3 ');
+  writeln('                  ---|---|---');
+  writeln('                   4 | 5 | 6 ');
+  writeln('                  ---|---|---');
+  writeln('                   7 | 8 | 9 ');
+  writeln('                  ---|---|---');
+  writeln;
   for i:=1 to 9 do
     begin
       if t[i] <> '' then 
@@ -80,21 +81,21 @@ begin
             7..9 : x := 8;
           end;
           case i of
-            1, 4, 7 : y := 2;
-            2, 5, 8 : y := 6;
-            3, 6, 9 : y := 10;
+            1, 4, 7 : y := 20;
+            2, 5, 8 : y := 24;
+            3, 6, 9 : y := 28;
           end;
         if t[i] = '1' then
           begin
             gotoxy(y, x);
             write(symJoueur1);
-            gotoxy(1, 10);
+            gotoxy(1, 11);
           end
         else
           begin
             gotoxy(y, x);
             write(symJoueur2);
-            gotoxy(1, 10);
+            gotoxy(1, 11);
           end; 
       end;
     end;
@@ -195,4 +196,11 @@ BEGIN
       bool := true
     else bool := false;
   until bool = false ;
+  clrScr;
+  if scoreJoueur1 > scoreJoueur2 then
+    writeln('Bien Joue ', nomJoueur1)
+  else
+  if scoreJoueur2 > scoreJoueur1 then
+    writeln('Bien Joue ', nomJoueur2); 
 END.
+
