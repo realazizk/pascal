@@ -26,8 +26,9 @@ var
   BShip            : Ship;
   BEnemy           : Enemy;
   rk               : integer;
-  i, k, new_x, new_y             : integer; { des compteurs pour ralentir }
+  SlowE, i, k, new_x, new_y             : integer; { des compteurs pour ralentir }
   dashboard, field : Pwindow;
+  Score : integer;
 
 function newPos(Posi : char) : integer;
 begin
@@ -38,10 +39,16 @@ begin
   else newPos := BShip.posx;
 end;
 
-function collision(posm, pose : integer) : Boolean;
+procedure collision(var BShip : Ship; var BEnemy: Enemy; var score : integer);
+var 
+  j : integer;
 begin
-  if (posm = pose) then collision := True
-  else collision := False;
+  for j:=1 to max_x do
+    if (BShip.ammupos[j] = BEnemy.enepos[j]) and (BEnemy.enepos[j] <> 0) then begin
+      BShip.ammupos[j] := 0;
+      BEnemy.enepos[j] := 0;
+      Inc(Score);
+    end;
 end;
 
 procedure Enemys(var BEnemy : Enemy);
@@ -51,14 +58,14 @@ begin
   {Affichage}
   for j:=1 to max_x do begin
     {un hack pour ralentir l'ennemi}
-    if (i mod 100 = 0) and (BEnemy.enepos[j] in [2..max_y-5]) then begin
+    if (SlowE mod  100 =0) and (BEnemy.enepos[j] in [2..max_y-5]) then begin
       Inc(BEnemy.enepos[j]); 
       mvprintw(BEnemy.enepos[j], j, 'X');
       refresh;
-      napms(50);
+      SlowE := 0;
+      napms(15);
     end
     else if (BEnemy.enepos[j] > max_y) then BEnemy.enepos[j] := 0;
-    i := 0;
   end;
 end;
 
@@ -66,13 +73,13 @@ procedure init(var BShip : Ship; var BEnemy : Enemy);
 var
   i : integer;
 begin
-  BShip.ammunition := 20;
+  BShip.ammunition := 200;
   {Initialisation des position des missiles par la derniere ligne (max_y)}
   {for i:=1 to 50 do
     BEnemy.enepos[i] := -1;}
   BShip.posx := max_x div 2;
   BShip.shape := 'O';
-  BEnemy.nbr := 15;
+  BEnemy.nbr := 15000;
 end;
 
 procedure Shoot(var BShip : Ship);
@@ -141,6 +148,7 @@ BEGIN
   nodelay(field, true);
   while True do begin
     Inc(i); Inc(k);
+    Inc(SlowE);
     rk := getch();
     case rk  of 
       67 : BShip.posx :=newPos('L');
@@ -155,26 +163,29 @@ BEGIN
            end;
     end; 
     { nettoyage la fenetre field }
-    wclear(field);
-    wclear(dashboard);
+    //wclear(field);
+    //wclear(dashboard);
     drawBox(field);
     drawBox(dashboard);
     //mvwprintw(field, 1, 1, 'Field');
-    mvwprintw(dashboard, 1, max_x div 2 , PChar(concat('| Ammo : ', IntToStr(BShip.ammunition))));
     // refresh each window
-    wrefresh(field);
-    wrefresh(dashboard);
     mvprintw(max_y-5, BShip.posx, 'O');
     refresh;
-    if (BEnemy.nbr > 0) then begin
+    if (BEnemy.nbr > 0) and (k = 100) then begin
       randomize;
       BEnemy.enepos[random(max_x)+1] := 2;
       Dec(BEnemy.nbr);
+      k := 0;
     end;
     Shoot(BShip);
-    //Enemys(BEnemy);
+    Enemys(BEnemy);
+    collision(BShip, BEnemy, Score);
+    mvwprintw(dashboard, 1, 1, PChar(concat('Score : ', IntToStr(Score))));
+    mvwprintw(dashboard, 1, max_x div 2 , PChar(concat('| Ammo : ', IntToStr(BShip.ammunition))));
+    wrefresh(field);
+    wrefresh(dashboard);
     {un petit dodo pour 3 millisecondes}
-    napms(5);
+    //napms(5);
   end;
   endwin();
 END.
