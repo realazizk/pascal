@@ -13,12 +13,13 @@ type
   Posi   : array [1..2] of integer;
   end;
   Snake = record
-  Length : integer;
-  Shape  : char;
-  Dead   : boolean;
-  Dir    : char;
+  Length   : integer;
+  Shape    : char;
+  Dead     : boolean;
+  Dir      : char;
   HeadPos, BackPos : array [1..2] of integer;
   end;
+  Board = array [2..25, 2..80] of  char;
 var
   score, game    : PWindow;
   max_y, max_x   : integer; { max screen size }
@@ -26,8 +27,10 @@ var
   rand_y, rand_x : integer;
   PApple         : Apple;
   PSnake         : Snake;
-  scr, ang, rk, i   : integer;
-  dir : char;
+  scr, ang, rk, i, j   : integer;
+  dir              : char;
+  PBoard : Board;
+
 procedure drawBox(win : PWindow); (* it is PWindow in pascal not Window like in C and
                                        C++*)
 var
@@ -42,7 +45,7 @@ begin
     mvwprintw(win, i, 0, '|');
     mvwprintw(win, i, x - 1, '|');
   end;
-  for i := 1 to (x - 2) do begin
+  for i:= 1 to (x - 2) do begin
     mvwprintw(win, 0, i, '-');
     mvwprintw(win, y - 1, i, '-');
   end;
@@ -56,7 +59,9 @@ begin
   mvwprintw(game, rand_y, rand_x, 'o');
 end;
 
-procedure movingSnake(var PSnake : Snake;Dir : char);
+procedure movingSnake(var PSnake : Snake;Dir : char; var PBoard : Board);
+var
+  tmp_y, tmp_x : integer;
 begin
   { Choice part }
   if (Dir <> PSnake.Dir) and not((((PSnake.Dir = 'L') and (Dir = 'R')) 
@@ -74,7 +79,9 @@ begin
   else if (PSnake.Dir = 'L') then Dec(PSnake.HeadPos[2])
   else if (PSnake.Dir = 'U') then Dec(PSnake.HeadPos[1])
   else Inc(PSnake.HeadPos[1]);
+  tmp_y := PSnake.HeadPos[1]; tmp_x := PSnake.HeadPos[2];
   { I Will do the printing in the Main function }
+  PBoard[tmp_y][tmp_x] := 'S';
 end;
 
 procedure checkCollision(PSnake : Snake; var PApple : Apple);
@@ -116,7 +123,10 @@ BEGIN
   scr := -1;
   PSnake.HeadPos[1] := 5;
   PSnake.HeadPos[2] := 20;
-  PSnake.Dir := 'L';
+  PSnake.Dir := 'D';
+  for i:=2 to max_y-5 do
+    for j:=2 to max_x do
+      PBoard[i][j] := 'E'; { E means empty }
   nodelay(game, True);
   (* Game logic here *)
   while True do begin
@@ -133,34 +143,40 @@ BEGIN
     end;
     rk := wgetch(game);
     case rk of
-      67 : Dir := 'R';
-      68  : Dir := 'L';
-      65    : Dir := 'U';
-      66  : Dir := 'D';
+      67    : Dir := 'R'; {Right}
+      68    : Dir := 'L'; {Left}
+      65    : Dir := 'U'; {UP}
+      66    : Dir := 'D'; {Down}
     end;
-    movingSnake(PSnake, Dir);
+    movingSnake(PSnake, Dir, PBoard);
     checkCollision(PSnake, PApple);
     if (PApple.Eaten) or (scr = -1) then begin
       {mvwdelch(game, rand_y, rand_x);}
       mvwprintw(game, rand_y, rand_x, ' ');
+      PBoard[rand_y][rand_x] := 'E';
       generateApple(max_y, max_x, rand_y, rand_x);
+      PBoard[rand_y][rand_x] := 'A'; { A means apple }
       Inc(scr);
       Inc(PSnake.Length);
     end;
-    { Displaying the snake; I didn't use a dummy matrix just for the dispalying }
-    for i:=0 to PSnake.Length do
-      begin
-        if (PSnake.Dir = 'U') or (PSnake.Dir = 'D') then
-          mvwprintw(game, PSnake.HeadPos[1]-i, PSnake.HeadPos[2], 'O')
-        else mvwprintw(game, PSnake.HeadPos[1], PSnake.HeadPos[2]-i, 'O');
-        napms(20);
-      end;
-    { this cleans behind the Snake }
+    { Printing Part; Printing the board to the screen 
+    for i:=2 to max_y-6 do
+      for j:=2 to max_x do
+        begin
+          in this way it will clean itself no need for window clear
+          if (PBoard[i][j] = 'S') then begin
+            mvwprintw(game, j, i, 'O');
+            PBoard[i][j] := 'E';
+          end
+          else if (PBoard[i][j] = 'E') then mvwprintw(game, j, i, ' ');
+          //napms(20);
+        end;}
+    {  this cleans behind the Snake }
     { Displaying score }
-    //mvwprintw(game, PSnake.HeadPos[1], PSnake.HeadPos[2]-, ' ');
-    mvwprintw(score, 1, 1, PChar(concat(IntToStr(scr), '                   '))); { the argument must be passed as a PChar }
-    wrefresh(game);
-    wrefresh(score);
+      mvwprintw(game, PSnake.HeadPos[1], PSnake.HeadPos[2]-, ' ');
+      mvwprintw(score, 1, 1, PChar(concat(IntToStr(scr), '                   '))); { the argument must be passed as a PChar }
+      wrefresh(game);
+      wrefresh(score);
   end;
   endwin();
 END.
