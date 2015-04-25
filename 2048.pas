@@ -1,5 +1,4 @@
 {
-  * Version 0.1
   * A 2048 clone in Old pascal using Allegro.pas
   * Made by Mohamed Aziz Knani
   * medazizknani[at]gmail.com  
@@ -20,7 +19,7 @@ type
   end;
 var 
   Display         : ALLEGRO_DISPLAYptr;
-  box_x, box_y, i : integer;
+  box_x, box_y    : integer;
   PGame           : Game; 
   event_queue     : ALLEGRO_EVENT_QUEUEptr;
   ev              : ALLEGRO_EVENT;
@@ -43,7 +42,7 @@ var
 begin
   {Drawing the cells}
   al_clear_to_color(al_map_rgb(187, 173, 160));
-  Font1 := al_load_font('Consolas.ttf', 30, 0);
+  Font1 := al_load_font('Consolas.ttf', 32, 0);
   box_y := -100;
   box_x := 0;
   j:=0;
@@ -289,13 +288,13 @@ BEGIN
   al_init_ttf_addon();
   al_install_keyboard();
   Display := al_create_display(500, 500);
+  al_set_window_title(Display, '2048');
   event_queue := al_create_event_queue();
   al_register_event_source(event_queue, al_get_keyboard_event_source);
   al_register_event_source(event_queue, al_get_display_event_source(Display));
   Draw(PGame);
   Closed:=False;
-  while not(Closed) do begin
-    Inc(i);
+  while not(Closed) or not(PGame.next) do begin
     al_wait_for_event(event_queue, ev);
     if (ev._type = ALLEGRO_EVENT_KEY_DOWN) then 
       case ev.keyboard.keycode of 
@@ -306,23 +305,21 @@ BEGIN
       else PGame.dir := N;
       end
     else if (ev._type = ALLEGRO_EVENT_DISPLAY_CLOSE) then Closed := True;
-    if PGame.dir <> N then mainGame(PGame);
-    Pfull(PGame);
-    {Spawning a new tile}
-    { * As always an ugly hackish way I dont know why the code abve executes
-      * Three times so I needed to write this hack *_* I will search a Solution }
-    if not(PGame.full) and (i=3) then begin
-      i:=0;
-      spawnTile(PGame);
+    if (ev._type = ALLEGRO_EVENT_KEY_DOWN) then begin
+      if PGame.dir <> N then begin
+        mainGame(PGame);
+        if not(PGame.full) then
+          spawnTile(PGame);
+      end;
+      Pfull(PGame);
+      Draw(PGame); 
+      Pnext(PGame);
     end;
-    Draw(PGame); 
-    Pnext(PGame);
-{
-    if not(PGame.next) then begin
-      al_draw_filled_rounded_rectangle(100, 100, 400, 100, 10, 10, al_map_rgb(255, 255, 255));
-      al_flip_display();   
-    end;
-}
   end;
+  if not(PGame.next) then begin
+    al_draw_filled_rounded_rectangle(50, 50, 450, 450, 10, 10, al_map_rgb(255, 223, 223));
+    al_draw_text(al_load_font('Consolas.ttf', 52, 0), al_map_rgb(119, 110, 110), al_get_display_width(display)/2, al_get_display_height(display)/2, ALLEGRO_ALIGN_CENTRE, 'Game Over!');
+    al_flip_display();
+  end; 
   al_destroy_display(Display);
 END.
