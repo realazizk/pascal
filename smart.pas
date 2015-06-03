@@ -52,7 +52,7 @@ end;
 BEGIN
   writeln(difficile(t));
 END.
-
+fggg
 
 
 
