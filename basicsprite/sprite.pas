@@ -14,11 +14,12 @@ Var
   ev          : ALLEGRO_EVENT;
   frame_count, curr_frame, i : byte;
   deg: integer;
-  rad, y, x : real;
+  rad, y, x, s : real;
   Up, Down, redraw
   : Boolean;
 
 BEGIN
+  s := 3;
   curr_frame  := 1;
   frame_count := 0;
   x := 100;
@@ -55,8 +56,9 @@ BEGIN
       if Up then deg -= 10
       else if Down then deg += 10;
       rad := deg * pi /180;
-      x += cos(rad)*3;
-      y += sin(rad)*0; 
+      { works great for collision }
+      if cos(rad) >= 0 then x += cos(rad)*s;
+      y += sin(rad)*s; 
       if (frame_count >= frame_delay ) then begin
         curr_frame := curr_frame +1;
         if (curr_frame > 8) then curr_frame := 1; 
