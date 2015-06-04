@@ -11,9 +11,15 @@ type
   bu = array [1..5] of record 
                          ID : projectiles;
                          live : Boolean;
-                         x, y, speed : integer;
+                         x, y  : real;
+                         rad, speed : real;
+                         Bulletimage, Rocketimage : ALLEGRO_BITMAPptr;
+                         maxBullets : byte;
                        end;
-
+  Ship = record
+           s, x, y, rad : real;
+           deg          : integer;
+         end;
 Var
   Display       : ALLEGRO_DISPLAYptr;
   redfighter,
@@ -22,33 +28,58 @@ Var
   timer         : ALLEGRO_TIMERptr;
   event_queue   : ALLEGRO_EVENT_QUEUEptr;
   ev            : ALLEGRO_EVENT;
-  frame_count, 
-  curr_frame, i : byte;
-  deg           : integer;
-  rad, y, x, s  : real;
+  i : byte;
   Up, Down, 
   redraw, Turbo  : Boolean;
-  Bullets    : bu;
-  pro : bu;
+  Bullets    : bu; 
+  TShip : Ship;
 
 procedure Initprojectiles(var Bullets : bu);
+Var
+  i : byte;
 begin
+  Bullets[i]
   for i:=1 to 5 do begin
-    Bullets.ID := Bullet;
-    Bullets.live := False;
-    Bullets.speed := 1;
+    Bullets[i].ID := Bullet;
+    Bullets[i].Bulletimage := al_load_bitmap('bullet1.png');
+    Bullets[i].live := False;
+    Bullets[i].speed := 10;
   end;
 end;
 
-procedure Fireprojectile(var )
+procedure Fireprojectile(var Bullets : bu; TShip : Ship);
+var 
+  i : byte;
+begin
+  for i:=1 to Bullets.maxBullets do 
+    if not(Bullets[i].live) then begin
+      Bullets[i].rad := TShip.rad ;
+      Bullets[i].live := True;
+      Bullets[i].x := TShip.x;
+      Bullets[i].y := TShip.y;
+      break;
+    end;
+end;
+
+procedure Updateprojectile(var Bullets : bu) ;
+var 
+  i : byte;
+begin
+  for i:=1 to 5 do 
+    if Bullets[i].live then begin
+      Bullets[i].x += trunc(cos(Bullets[i].rad)*Bullets[i].speed);
+      Bullets[i].y += trunc(sin(Bullets[i].rad)*Bullets[i].speed);
+      al_draw_rotated_bitmap(Bullets[i].Bulletimage, 16 / 2, 16 / 2, Bullets[i].x, Bullets[i].y, Bullets[i].rad, 0); 
+      
+    end;
+end;
+
 
 BEGIN
-  s := 1;
-  x := 200;
-  y := 100;
-  curr_frame  := 1;
-  frame_count := 0;
-  x := 100;
+  TShip.s := 1;
+  TShip.x := 200;
+  TShip.y := 100;
+  TShip.x := 100;
   cond := True;
   al_init();
   al_init_image_addon();
@@ -74,6 +105,7 @@ BEGIN
         AlLEGRO_KEY_UP    : Up    := True;
         ALLEGRO_KEY_DOWN  : Down  := True;
         ALLEGRO_KEY_SPACE : Turbo := True;
+        ALLEGRO_KEY_W     : Fireprojectile(Bullets, TShip); 
       end
     else if (ev._type = ALLEGRO_EVENT_KEY_UP) then 
        case ev.keyboard.keycode of 
@@ -82,26 +114,26 @@ BEGIN
         ALLEGRO_KEY_SPACE : Turbo := False; 
        end
     else if (ev._type = ALLEGRO_EVENT_TIMER) then begin 
-      if Turbo then s += 0.1  
-      else if s > 0 then s -= 0.1;
-      if Up then deg -= 3 
-      else if Down then deg += 3;
-      rad := deg * pi /180;
+      if Turbo then TShip.s += 0.1  
+      else if TShip.s > 0 then TShip.s -= 0.1;
+      if Up then TShip.deg -= 3 
+      else if Down then TShip.deg += 3;
+      TShip.rad := TShip.deg * pi /180;
      
-      x += trunc(cos(rad)*s);
-      y += trunc(sin(rad)*s);
+      TShip.x += trunc(cos(TShip.rad)*TShip.s);
+      TShip.y += trunc(sin(TShip.rad)*TShip.s);
       {object redirection} 
-     if (screen_h+68 < x) then x := -68
-     else if (-76 > y) then y := screen_w+76
-     else if (screen_w+76 < y) then y := -76
-     else if (-68 > x) then x := screen_h+68; 
+     if (screen_h+68 < TShip.x) then TShip.x := -68
+     else if (-76 > TShip.y) then TShip.y := screen_w+76
+     else if (screen_w+76 < TShip.y) then TShip.y := -76
+     else if (-68 > TShip.x) then TShip.x := screen_h+68; 
      redraw := True;
      if redraw and al_is_event_queue_empty(event_queue) then begin
        al_draw_bitmap(SpaceWall, 0, 0, 0);
        {al_clear_to_color(al_map_rgb(0, 12, 11));}
        { Drawing the ship :3 }
-       al_draw_rotated_bitmap(redfighter, 68 / 2, 76 / 2, x , y, rad  , 0);
-
+       al_draw_rotated_bitmap(redfighter, 68 / 2, 76 / 2, TShip.x , TShip.y, TShip.rad  , 0);
+       Updateprojectile(Bullets);
      al_flip_display();
      redraw := False;
      end; 
