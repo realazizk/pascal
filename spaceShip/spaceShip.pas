@@ -8,13 +8,13 @@ Const
   screen_w = 600;
 type 
   projectiles = (Bullet, Rocket);
-  bu = array [1..5] of record 
+  bu = array [1..10] of record 
                          ID : projectiles;
                          live : Boolean;
                          x, y  : real;
                          rad, speed : real;
                          Bulletimage, Rocketimage : ALLEGRO_BITMAPptr;
-                         maxBullets : byte;
+                         
                        end;
   Ship = record
            s, x, y, rad : real;
@@ -33,13 +33,13 @@ Var
   redraw, Turbo  : Boolean;
   Bullets    : bu; 
   TShip : Ship;
-
+  Mis   : boolean;
 procedure Initprojectiles(var Bullets : bu);
 Var
   i : byte;
 begin
-  Bullets[i]
-  for i:=1 to 5 do begin
+
+  for i:=1 to 10 do begin
     Bullets[i].ID := Bullet;
     Bullets[i].Bulletimage := al_load_bitmap('bullet1.png');
     Bullets[i].live := False;
@@ -51,9 +51,9 @@ procedure Fireprojectile(var Bullets : bu; TShip : Ship);
 var 
   i : byte;
 begin
-  for i:=1 to Bullets.maxBullets do 
+  for i:=1 to 10 do 
     if not(Bullets[i].live) then begin
-      Bullets[i].rad := TShip.rad ;
+      Bullets[i].rad := TShip.rad + (random(3) * 0.1) ;
       Bullets[i].live := True;
       Bullets[i].x := TShip.x;
       Bullets[i].y := TShip.y;
@@ -65,10 +65,15 @@ procedure Updateprojectile(var Bullets : bu) ;
 var 
   i : byte;
 begin
-  for i:=1 to 5 do 
+  for i:=1 to 10 do 
     if Bullets[i].live then begin
       Bullets[i].x += trunc(cos(Bullets[i].rad)*Bullets[i].speed);
-      Bullets[i].y += trunc(sin(Bullets[i].rad)*Bullets[i].speed);
+      Bullets[i].y += trunc(sin(Bullets[i].rad)*Bullets[i].speed); 
+      if ((screen_h+16 < Bullets[i].x) or  (-16 > Bullets[i].y)) 
+      or ((screen_w+16 < Bullets[i].y) or (-16 > Bullets[i].x)) then begin
+        Bullets[i].live := False;
+        continue;
+      end;
       al_draw_rotated_bitmap(Bullets[i].Bulletimage, 16 / 2, 16 / 2, Bullets[i].x, Bullets[i].y, Bullets[i].rad, 0); 
       
     end;
@@ -105,19 +110,21 @@ BEGIN
         AlLEGRO_KEY_UP    : Up    := True;
         ALLEGRO_KEY_DOWN  : Down  := True;
         ALLEGRO_KEY_SPACE : Turbo := True;
-        ALLEGRO_KEY_W     : Fireprojectile(Bullets, TShip); 
+        ALLEGRO_KEY_W     : Mis   := True; 
       end
     else if (ev._type = ALLEGRO_EVENT_KEY_UP) then 
        case ev.keyboard.keycode of 
         AlLEGRO_KEY_UP    : Up    := False;
         ALLEGRO_KEY_DOWN  : Down  := False;
-        ALLEGRO_KEY_SPACE : Turbo := False; 
+        ALLEGRO_KEY_SPACE : Turbo := False;
+        ALLEGRO_KEY_W     : Mis   := False;  
        end
     else if (ev._type = ALLEGRO_EVENT_TIMER) then begin 
       if Turbo then TShip.s += 0.1  
       else if TShip.s > 0 then TShip.s -= 0.1;
       if Up then TShip.deg -= 3 
       else if Down then TShip.deg += 3;
+      if Mis then Fireprojectile(Bullets, TShip);
       TShip.rad := TShip.deg * pi /180;
      
       TShip.x += trunc(cos(TShip.rad)*TShip.s);
@@ -132,8 +139,8 @@ BEGIN
        al_draw_bitmap(SpaceWall, 0, 0, 0);
        {al_clear_to_color(al_map_rgb(0, 12, 11));}
        { Drawing the ship :3 }
-       al_draw_rotated_bitmap(redfighter, 68 / 2, 76 / 2, TShip.x , TShip.y, TShip.rad  , 0);
        Updateprojectile(Bullets);
+       al_draw_rotated_bitmap(redfighter, 68 / 2, 76 / 2, TShip.x , TShip.y, TShip.rad  , 0);
      al_flip_display();
      redraw := False;
      end; 
