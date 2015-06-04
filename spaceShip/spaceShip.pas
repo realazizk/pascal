@@ -189,6 +189,21 @@ begin
     end;
 end;
 
+procedure collision(var Tasteroids : asteroids; var Bullets : bu); 
+var 
+  i, j : byte;
+begin
+  for i:=1 to 10 do 
+    for j:=1 to 10 do 
+      if (Tasteroids[j].live) then
+    	if((Bullets[i].x > (Tasteroids[j].x - Tasteroids[i]._size)) 
+        and (Bullets[i].x < (Tasteroids[j].x + Tasteroids[j]._size)) 
+        and ((Bullets[i].y > (Tasteroids[j].y - Tasteroids[j]._size)) 
+        and (Bullets[i].y < (Tasteroids[j].y + Tasteroids[j]._size)))) then begin
+          Bullets[i].live := False;
+          Tasteroids[j].live := False;
+        end;
+end;
 
 
 BEGIN
@@ -237,6 +252,7 @@ BEGIN
        al_draw_bitmap(SpaceWall, 0, 0, 0);
        {al_clear_to_color(al_map_rgb(0, 12, 11));}
        { Drawing the ship :3 }
+       collision(Tasteroids, Bullets);
        Updateprojectile(Bullets);
        al_draw_rotated_bitmap(redfighter, 68 / 2, 76 / 2, TShip.x , TShip.y, TShip.rad  , 0);
        UpdateAst(Tasteroids); 
