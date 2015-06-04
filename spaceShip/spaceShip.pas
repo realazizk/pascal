@@ -1,6 +1,7 @@
 
 uses Allegro5, Al5image,
-     Al5acodec, Al5audio;
+     Al5acodec, Al5audio,
+     Sysutils;
 
 Const
   FPS = 60;
@@ -14,13 +15,23 @@ type
                          live : Boolean;
                          x, y  : real;
                          rad, speed : real;
-                         Bulletimage, Rocketimage : ALLEGRO_BITMAPptr;
+                         Img   : ALLEGRO_BITMAPptr;
                          
                        end;
-  Ship = record
-           s, x, y, rad : real;
-           deg          : integer;
-         end;
+  Ship      = record
+                s, x, y, rad : real;
+                deg          : integer;
+              end;
+
+  asteroids = array [1..10] of record 
+                                Image : ALLEGRO_BITMAPptr;
+                                x, y  : real;
+                                rad   : real;
+                                live  : boolean;
+                                speed : real;
+                                _size : byte;  
+                              end; 
+
 Var
   Display       : ALLEGRO_DISPLAYptr;
   redfighter,
@@ -29,14 +40,56 @@ Var
   timer         : ALLEGRO_TIMERptr;
   event_queue   : ALLEGRO_EVENT_QUEUEptr;
   ev            : ALLEGRO_EVENT;
-  i : byte;
+  i             : byte;
   Up, Down, 
-  redraw, Turbo  : Boolean;
-  Bullets    : bu; 
-  TShip : Ship;
-  Mis   : boolean;
-  song, bulletSound   : ALLEGRO_SAMPLEptr;
-  songInstance : ALLEGRO_SAMPLE_INSTANCEptr;
+  redraw, Turbo : Boolean;
+  Bullets       : bu; 
+  TShip         : Ship;
+  Mis           : boolean;
+  song, 
+  bulletSound   : ALLEGRO_SAMPLEptr;
+  songInstance  : ALLEGRO_SAMPLE_INSTANCEptr;
+  Tasteroids    : asteroids;
+  asterNum      : byte; 
+
+procedure Initprojectiles(var Bullets : bu); forward;
+
+procedure InitAst(var Tasteroids : asteroids); forward;
+
+procedure Init;
+begin
+  randomize;
+  TShip.s := 1;
+  TShip.x := 200;
+  TShip.y := 100;
+  TShip.x := 100;
+  cond := True;
+  al_init();
+  al_init_image_addon();
+  al_init_acodec_addon();
+  al_install_audio();
+  al_install_keyboard(); 
+  bulletSound := al_load_sample('bullet.ogg');
+  al_reserve_samples(2);
+
+  Initprojectiles(Bullets);
+  InitAst(Tasteroids);
+  Display := al_create_display(screen_h, screen_w);
+  timer := al_create_timer(1.0/FPS);
+  event_queue := al_create_event_queue();
+  al_register_event_source(event_queue, al_get_display_event_source(Display));
+  al_register_event_source(event_queue, al_get_timer_event_source(timer));
+  al_register_event_source(event_queue, al_get_keyboard_event_source());
+  song := al_load_sample('music.ogg');
+  songInstance := al_create_sample_instance(song);
+  al_set_sample_instance_playmode(songInstance, ALLEGRO_PLAYMODE_LOOP);
+  al_attach_sample_instance_to_mixer(songInstance, al_get_default_mixer());
+  al_play_sample_instance(songInstance);
+  
+  redfighter := al_load_bitmap('redfighter.png');
+  SpaceWall := al_load_bitmap('galaxy.jpg');
+end;
+
 procedure Initprojectiles(var Bullets : bu);
 Var
   i : byte;
@@ -44,7 +97,7 @@ begin
 
   for i:=1 to 10 do begin
     Bullets[i].ID := Bullet;
-    Bullets[i].Bulletimage := al_load_bitmap('bullet1.png');
+    Bullets[i].Img := al_load_bitmap('bullet1.png');
     Bullets[i].live := False;
     Bullets[i].speed := 10;
   end;
@@ -77,44 +130,70 @@ begin
         Bullets[i].live := False;
         continue;
       end;
-      al_draw_rotated_bitmap(Bullets[i].Bulletimage, 16 / 2, 16 / 2, Bullets[i].x, Bullets[i].y, Bullets[i].rad, 0); 
+      al_draw_rotated_bitmap(Bullets[i].Img, 16 / 2, 16 / 2, Bullets[i].x, Bullets[i].y, Bullets[i].rad, 0); 
+      
+    end;
+end;
+
+procedure InitAst(var Tasteroids : asteroids);
+var 
+  i, r : byte;
+begin
+  for i:=1 to 10  do begin 
+    Tasteroids[i].x     := 0;
+    Tasteroids[i].y     := 0; 
+    Tasteroids[i].live  := False;
+    r                   := random(3)+1;
+    Writeln(r);
+    Tasteroids[i].Image := al_load_bitmap('asteroid'+ InttoStr(r) +'.png');
+    al_convert_mask_to_alpha(Tasteroids[i].Image, al_map_rgb(255, 255, 255)) ;
+    Tasteroids[i].speed := r*1.5;
+    case r of 
+      1 : Tasteroids[i]._size := 32;
+      2 : Tasteroids[i]._size := 40;
+      3 : Tasteroids[i]._size := 44;
+    end; 
+  end;
+end;
+
+procedure spawnAst(var Tasteroids : asteroids);
+var 
+  i : byte;
+begin
+  for i:=1 to 10 do
+    if not(Tasteroids[i].live) then begin
+      Tasteroids[i].live := True;
+      Tasteroids[i].rad  := random(361) * pi / 180;
+      Tasteroids[i].x    := random(801);
+      Tasteroids[i].y    := -44;
+      break;
+    end;
+end;
+
+procedure UpdateAst(var Tasteroids : asteroids) ;
+var 
+  i : byte;
+begin
+  for i:=1 to 10 do 
+    if Tasteroids[i].live then begin
+      Tasteroids[i].x += trunc(cos(Tasteroids[i].rad)*Tasteroids[i].speed);
+      Tasteroids[i].y += trunc(sin(Tasteroids[i].rad)*Tasteroids[i].speed); 
+      if ((screen_h+44 < Tasteroids[i].x) or  (-44 > Tasteroids[i].y)) 
+      or ((screen_w+44 < Tasteroids[i].y) or (-44 > Tasteroids[i].x)) then begin
+        Tasteroids[i].live := False;
+        continue;
+      end;
+      al_draw_rotated_bitmap(Tasteroids[i].Image, Tasteroids[i]._size / 2, Tasteroids[i]._size / 2, 
+        Tasteroids[i].x, Tasteroids[i].y, Tasteroids[i].rad, 0); 
       
     end;
 end;
 
 
+
 BEGIN
-  TShip.s := 1;
-  TShip.x := 200;
-  TShip.y := 100;
-  TShip.x := 100;
-  cond := True;
-  al_init();
-  al_init_image_addon();
-  al_init_acodec_addon();
-  al_install_audio();
-  al_install_keyboard(); 
-  bulletSound := al_load_sample('bullet.wav');
-  al_reserve_samples(2);
-
-  Initprojectiles(Bullets);
-  Display := al_create_display(screen_h, screen_w);
-  timer := al_create_timer(1.0/FPS);
-  event_queue := al_create_event_queue();
-  al_register_event_source(event_queue, al_get_display_event_source(Display));
-  al_register_event_source(event_queue, al_get_timer_event_source(timer));
-  al_register_event_source(event_queue, al_get_keyboard_event_source());
-  song := al_load_sample('music.ogg');
-  songInstance := al_create_sample_instance(song);
-  al_set_sample_instance_playmode(songInstance, ALLEGRO_PLAYMODE_LOOP);
-  al_attach_sample_instance_to_mixer(songInstance, al_get_default_mixer());
-
-  al_play_sample_instance(songInstance);
-
+  Init;
   al_start_timer(timer);
-
-  redfighter := al_load_bitmap('redfighter.png');
-  SpaceWall := al_load_bitmap('galaxy.jpg');
   while cond do begin
     al_wait_for_event(event_queue, ev);
 
@@ -124,8 +203,9 @@ BEGIN
         AlLEGRO_KEY_UP    : Up    := True;
         ALLEGRO_KEY_DOWN  : Down  := True;
         ALLEGRO_KEY_SPACE : Turbo := True;
-        ALLEGRO_KEY_W     : begin 
-                             al_play_sample(bulletSound, 1, 1, 0, ALLEGRO_PLAYMODE_ONCE, nil);
+        ALLEGRO_KEY_W     : begin
+                            if Mis = False then  
+                             al_play_sample(bulletSound, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, nil);
                              Mis   := True; 
                            end;
       end
@@ -136,8 +216,9 @@ BEGIN
         ALLEGRO_KEY_SPACE : Turbo := False;
         ALLEGRO_KEY_W     : Mis   := False;  
        end
-    else if (ev._type = ALLEGRO_EVENT_TIMER) then begin 
-      if Turbo then TShip.s += 0.1  
+    else if (ev._type = ALLEGRO_EVENT_TIMER) then begin
+      spawnAst(Tasteroids); 
+      if (Turbo) and (TShip.s <= 7)  then TShip.s += 0.1  
       else if TShip.s > 0 then TShip.s -= 0.1;
       if Up then TShip.deg -= 3 
       else if Down then TShip.deg += 3;
@@ -158,12 +239,14 @@ BEGIN
        { Drawing the ship :3 }
        Updateprojectile(Bullets);
        al_draw_rotated_bitmap(redfighter, 68 / 2, 76 / 2, TShip.x , TShip.y, TShip.rad  , 0);
+       UpdateAst(Tasteroids); 
      al_flip_display();
      redraw := False;
      end; 
     end;
 
   end;
+  al_destroy_sample(bulletSound);
   al_destroy_sample(song);
   al_destroy_sample_instance(songInstance);
   al_destroy_bitmap(redfighter);
