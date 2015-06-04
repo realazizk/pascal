@@ -1,5 +1,6 @@
 
-uses Allegro5, Al5image;
+uses Allegro5, Al5image,
+     Al5acodec, Al5audio;
 
 Const
   FPS = 60;
@@ -34,6 +35,8 @@ Var
   Bullets    : bu; 
   TShip : Ship;
   Mis   : boolean;
+  song, bulletSound   : ALLEGRO_SAMPLEptr;
+  songInstance : ALLEGRO_SAMPLE_INSTANCEptr;
 procedure Initprojectiles(var Bullets : bu);
 Var
   i : byte;
@@ -88,7 +91,12 @@ BEGIN
   cond := True;
   al_init();
   al_init_image_addon();
+  al_init_acodec_addon();
+  al_install_audio();
   al_install_keyboard(); 
+  bulletSound := al_load_sample('bullet.wav');
+  al_reserve_samples(2);
+
   Initprojectiles(Bullets);
   Display := al_create_display(screen_h, screen_w);
   timer := al_create_timer(1.0/FPS);
@@ -96,8 +104,14 @@ BEGIN
   al_register_event_source(event_queue, al_get_display_event_source(Display));
   al_register_event_source(event_queue, al_get_timer_event_source(timer));
   al_register_event_source(event_queue, al_get_keyboard_event_source());
-  al_start_timer(timer);
+  song := al_load_sample('music.ogg');
+  songInstance := al_create_sample_instance(song);
+  al_set_sample_instance_playmode(songInstance, ALLEGRO_PLAYMODE_LOOP);
+  al_attach_sample_instance_to_mixer(songInstance, al_get_default_mixer());
 
+  al_play_sample_instance(songInstance);
+
+  al_start_timer(timer);
 
   redfighter := al_load_bitmap('redfighter.png');
   SpaceWall := al_load_bitmap('galaxy.jpg');
@@ -110,7 +124,10 @@ BEGIN
         AlLEGRO_KEY_UP    : Up    := True;
         ALLEGRO_KEY_DOWN  : Down  := True;
         ALLEGRO_KEY_SPACE : Turbo := True;
-        ALLEGRO_KEY_W     : Mis   := True; 
+        ALLEGRO_KEY_W     : begin 
+                             al_play_sample(bulletSound, 1, 1, 0, ALLEGRO_PLAYMODE_ONCE, nil);
+                             Mis   := True; 
+                           end;
       end
     else if (ev._type = ALLEGRO_EVENT_KEY_UP) then 
        case ev.keyboard.keycode of 
@@ -147,6 +164,8 @@ BEGIN
     end;
 
   end;
+  al_destroy_sample(song);
+  al_destroy_sample_instance(songInstance);
   al_destroy_bitmap(redfighter);
   al_destroy_event_queue(event_queue); 
   al_destroy_timer(timer);  
