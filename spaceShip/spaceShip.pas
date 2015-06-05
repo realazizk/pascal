@@ -54,9 +54,10 @@ type
                    curr_frame, frame_count,
                    frame_delay, max_frames,
                    frame_height, frame_width : byte;
-                   x, y, _size               : integer; 
+                    _size               : integer; 
                    images                    : array of ALLEGRO_BITMAPptr;
                    live                      : Boolean;
+                   x, y : real;
                  end;
 
   evil     = array [1..5]  of record
@@ -92,6 +93,7 @@ Var
   maxAst        : byte;
   Font1         : ALLEGRO_FONTptr;
   gameOver      : ALLEGRO_BITMAPptr;
+  Explosions    : array [1..10] of spriteZ;
 procedure Initprojectiles(var Bullets : bu); forward;
 
 procedure InitAst(var Tasteroids : asteroids; Start, maxAst : byte); forward;
@@ -130,7 +132,7 @@ end;
 
 procedure Init;
 var 
-  i : byte;
+  i, j : byte;
 begin
   randomize;
   TShip.s := 1;
@@ -161,8 +163,19 @@ begin
 
   for i:= 0 to rotatingStar.max_frames-1 do 
     rotatingStar.images[i] := al_load_bitmap('rotStar/a-'+InttoStr(i)+'.png');
+
   rotatingStar.live := True;
   rotatingStar._size := 72;
+  
+  for j:=1 to 10 do begin   
+    Setlength(Explosions[j].images, 16);
+    Explosions[j].frame_delay := 10;
+    Explosions[j].max_frames := 16;
+    Explosions[j].live := False;
+
+    for i:=0 to Explosions[j].max_frames-1 do 
+      Explosions[j].images[i] := al_load_bitmap('explosion/exp-'+IntToStr(i)+'.png'); 
+  end; 
   spawnStar(rotatingStar);
     
 end;
@@ -283,10 +296,11 @@ end;
 
 procedure spriteMover(var curr_frame, frame_count : byte; frame_delay, max_frames : byte);
 begin
+  
   if (frame_count >= frame_delay ) then begin
     curr_frame := curr_frame +1;
     if (curr_frame >= max_frames) then curr_frame := 0; 
-    frame_count := 0; 
+    frame_count := 0;
   end; 
   frame_count := frame_count +1;
 end;
@@ -310,7 +324,7 @@ end;
 
 procedure shipCollision(var TShip : Ship; var Tasteroids : asteroids; maxAst : byte);
 var 
-  j : byte;
+  j, i, k : byte;
 begin 
   for j:= 0 to maxAst-1 do 
     if((TShip.x > (Tasteroids[j].x - Tasteroids[j]._size)) 
@@ -319,6 +333,20 @@ begin
     and (TShip.y < (Tasteroids[j].y + Tasteroids[j]._size)))) then begin 
       TShip.Health -= 1;
       Tasteroids[j].live := False;
+      for i:=1 to 10 do 
+       if not(Explosions[i].live ) then 
+        with Explosions[i] do begin 
+          x := Tasteroids[j].x;
+          y := Tasteroids[j].y;
+          for k:=1 to 32 do begin
+            frame_count += 1; 
+            spriteMover(curr_frame, frame_count, frame_delay, max_frames);
+            Writeln(curr_frame);
+            al_draw_bitmap(images[curr_frame], x, y, 0);
+          end;
+          live := False;
+          break;
+        end;
     end; 
 end;
 
