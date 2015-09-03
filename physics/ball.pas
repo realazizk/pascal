@@ -5,7 +5,7 @@ const
   FPS = 120;
   Gravity = 9.8;
   SurfaceWeight = 60000000;
-  accx = 1;
+  accx = 12;
 type
   Ball = record
     xp, yp, vx, vy, mass : real;
@@ -20,7 +20,7 @@ var
   oldVy, dt, oldFps, newFps : Real;
   i : integer;
 BEGIN
-  B.vx := 20; B.vy := 4; B.xp:= 100; B.yp := 10;
+  B.vx := -20; B.vy := 0; B.xp:= 100; B.yp := 10;
   i:=0;
   B.mass := 60000;
   al_init();
