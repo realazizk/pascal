@@ -9,10 +9,10 @@ begin
   write('Enter Wordlist > ');readln(wl);
   assign(hashFile, hf);
   reset(hashFile);
+  assign(wordlist, wl);
+  reset(wordlist);
   repeat
     readln(hashFile, hline);
-    assign(wordlist, wl);
-    reset(wordlist);
     repeat
       readln(wordlist, wline);
       if (MD5Print(MD5String(wline)) = hline) then

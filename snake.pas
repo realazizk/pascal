@@ -173,7 +173,7 @@ BEGIN
         end;}
     {  this cleans behind the Snake }
     { Displaying score }
-      mvwprintw(game, PSnake.HeadPos[1], PSnake.HeadPos[2]-, ' ');
+      mvwprintw(game, PSnake.HeadPos[1], PSnake.HeadPos[2], ' ');
       mvwprintw(score, 1, 1, PChar(concat(IntToStr(scr), '                   '))); { the argument must be passed as a PChar }
       wrefresh(game);
       wrefresh(score);

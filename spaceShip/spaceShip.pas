@@ -94,6 +94,7 @@ Var
   Font1         : ALLEGRO_FONTptr;
   gameOver      : ALLEGRO_BITMAPptr;
   Explosions    : array [1..10] of spriteZ;
+  
 procedure Initprojectiles(var Bullets : bu); forward;
 
 procedure InitAst(var Tasteroids : asteroids; Start, maxAst : byte); forward;
