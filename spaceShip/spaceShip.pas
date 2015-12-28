@@ -170,10 +170,11 @@ begin
   
   for j:=1 to 10 do begin   
     Setlength(Explosions[j].images, 16);
-    Explosions[j].frame_delay := 10;
+    Explosions[j].frame_delay := 1;
     Explosions[j].max_frames := 16;
     Explosions[j].live := False;
-
+    Explosions[j].frame_height := 200;
+    Explosions[j].frame_width := 200;
     for i:=0 to Explosions[j].max_frames-1 do 
       Explosions[j].images[i] := al_load_bitmap('explosion/exp-'+IntToStr(i)+'.png'); 
   end; 
@@ -337,16 +338,10 @@ begin
       for i:=1 to 10 do 
        if not(Explosions[i].live ) then 
         with Explosions[i] do begin 
-          x := Tasteroids[j].x;
-          y := Tasteroids[j].y;
-          for k:=1 to 32 do begin
-            frame_count += 1; 
-            spriteMover(curr_frame, frame_count, frame_delay, max_frames);
-            Writeln(curr_frame);
-            al_draw_bitmap(images[curr_frame], x, y, 0);
-          end;
-          live := False;
-          break;
+          x := TShip.x - Explosions[i].frame_width / 2;
+          y := TShip.y- Explosions[i].frame_height / 2;
+          live := True;
+          {break;}
         end;
     end; 
 end;
@@ -445,6 +440,19 @@ BEGIN
          end;
        end;
        shipCollision(TShip, Tasteroids, maxAst); 
+        for i:=1 to 10 do begin
+        if (Explosions[i].live) then begin
+          with Explosions[i] do begin
+            spriteMover(curr_frame, frame_count, frame_delay, max_frames);
+            al_draw_bitmap(images[curr_frame], x, y, 0);
+            if (curr_frame=max_frames-1) then begin
+              curr_frame := 0;
+              frame_count := 0;
+              live := False;
+            end;
+          end;
+          end;
+        end;
        al_draw_rotated_bitmap(redfighter, 68 / 2, 76 / 2, TShip.x , TShip.y, TShip.rad  , 0);
        UpdateAst(Tasteroids, maxAst);
        { Draw score } 
