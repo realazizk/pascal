@@ -104,6 +104,7 @@ begin
           inserer(x, y, symJoueur2, 0)
       end;
     end;
+    Delay(1000);
 end;
 
 procedure check(t : tab;var a: boolean;var scoreJoueur1, scoreJoueur2 : integer);
