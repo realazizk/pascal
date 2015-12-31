@@ -1,10 +1,12 @@
 COMPILER = fpc
 DEBUGGER = gdb
-FLAGS = -gl
+OUTPUT = 2010_pratique_1
+FLAGS = -gl -o$(OUTPUT)
 INPUT = < input.txt
-all: trifusion.pas
-	$(COMPILER) $(FLAGS) trifusion.pas	
-run: all trifusion
-	./trifusion $(INPUT)
+SOURCE = 2010_pratique_1.pas
+all: $(SOURCE)
+	$(COMPILER) $(FLAGS) $(SOURCE)
+run: all $(OUTPUT)
+	./$(OUTPUT) $(INPUT)
 debug: all
-	gdb ./trifusion
+	gdb ./$(OUTPUT)
