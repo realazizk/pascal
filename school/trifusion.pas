@@ -5,8 +5,8 @@ uses crt;
 type
   tab = array [1..10] of Integer;
 var
-  t, a, b : Tab;
-  n, m : Integer;
+  t : Tab;
+  n : Integer;
 procedure saisie(var t : tab;var  n : Integer);
 var
   i : Integer;
