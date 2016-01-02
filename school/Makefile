@@ -1,9 +1,9 @@
 COMPILER = fpc
 DEBUGGER = gdb
-OUTPUT = 2010_pratique_1
-FLAGS = -gl -o$(OUTPUT)
+OUTPUT = distance
+FLAGS = -gl -o$(OUTPUT) -Mtp
 INPUT = < input.txt
-SOURCE = 2010_pratique_1.pas
+SOURCE = distance.pas
 all: $(SOURCE)
 	$(COMPILER) $(FLAGS) $(SOURCE)
 run: all $(OUTPUT)
