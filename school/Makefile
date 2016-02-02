@@ -1,9 +1,9 @@
 COMPILER = fpc
 DEBUGGER = gdb
-OUTPUT = distance
+OUTPUT = counting_sort
 FLAGS = -gl -o$(OUTPUT) -Mtp
 INPUT = < input.txt
-SOURCE = distance.pas
+SOURCE = counting_sort.pas
 all: $(SOURCE)
 	$(COMPILER) $(FLAGS) $(SOURCE)
 run: all $(OUTPUT)
