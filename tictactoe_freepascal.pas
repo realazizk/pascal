@@ -1,6 +1,7 @@
 program tictactoe;
 {
   Simple jeu realisee par mohamed Aziz knani
+  2015
 }
 uses crt;
 
@@ -49,9 +50,7 @@ begin
         begin
           compare := true;
           st := valeur1;
-        end
-  else
-    compare := false;
+        end;
 end;
 
 
@@ -84,6 +83,17 @@ begin
   writeln('                   7 | 8 | 9 ');
   writeln('                  ---|---|---');
   writeln;
+  if tourJoueur1 then begin
+    textcolor(Lightblue);
+    Writeln('Le tour de ', nomJoueur1);
+
+  end
+  else  begin
+    textcolor(Red);
+    Writeln('Le tour de ', nomJoueur2 );
+  end;
+
+  textcolor(Lightgray);
   for i:=1 to 9 do
     begin
       if t[i] <> '' then 
@@ -104,7 +114,7 @@ begin
           inserer(x, y, symJoueur2, 0)
       end;
     end;
-    Delay(1000);
+    Delay(100);
 end;
 
 procedure check(t : tab;var a: boolean;var scoreJoueur1, scoreJoueur2 : integer);
@@ -169,6 +179,10 @@ begin
 end;
 
 begin
+  if t[5] = '' then begin
+    difficile := 5;
+    exit;
+  end;
   if com(t[1], t[2], t[3], 1, 2, 3, st) or com(t[4], t[5], t[6], 4, 5, 6, st) or com(t[7], t[8], t[9], 7, 8, 9, st)
   or com(t[1], t[4], t[7], 1, 4, 7, st) or com(t[2], t[5], t[8], 2, 5, 8, st) or com(t[3], t[6], t[9], 3, 6, 9, st)
   or com(t[1], t[5], t[9], 1, 5, 9, st) or com(t[3], t[5], t[7], 3, 5, 7, st) then
@@ -182,24 +196,45 @@ begin
       difficile := random(9) + 1;
     end;
 end;
-
+var
+  k : Boolean;
+  Cursor_x, Cursor_y : Byte;
+  KeyClick : Char;
 begin
   repeat
     cho := false;
     if not(joueur in [2..3]) then
       begin
-        textcolor(blue);
-        write(nomJoueur);
-        textcolor(Lightgray);
-        write(' entrer un nombre entre [1, 9] -> ');readln(choix);
+        Cursor_x := 20;
+        Cursor_y := 4;
+        k:= True;
+        gotoxy(Cursor_x, Cursor_y);
+        while k do begin
+          KeyClick := ReadKey(); 
+          {If the user player clicks keyboard arrows}
+          case KeyClick of 
+            #106: if (Cursor_y+2<=9) then Cursor_y += 2;  
+            #107: if (Cursor_y-2>=4) then Cursor_y -= 2;  
+            #104: if (Cursor_x-4>=20) then Cursor_x -= 4;
+            #108: if (Cursor_x+4<=28) then Cursor_x += 4;
+
+            #32: begin
+              choix := ((Cursor_y div 2)-2) * 3 + ((Cursor_x div 4)-5) +1;
+              k := False;
+            end;
+          end;
+          gotoxy(Cursor_x, Cursor_y);
+        end;
       end
     else 
+     {The computer choice (random choice)}
       if joueur = 2 then
         begin
           randomize;
           choix := random(9) + 1;
         end
     else
+      {The computer's "smart" choice}
       if joueur = 3 then 
     begin    
     choix := difficile(t);
@@ -255,6 +290,8 @@ begin
     end;
    end;
 end;
+
+
 
 BEGIN
   repeat

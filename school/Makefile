@@ -1,9 +1,9 @@
 COMPILER = fpc
 DEBUGGER = gdb
-OUTPUT = counting_sort
+OUTPUT = losange
 FLAGS = -gl -o$(OUTPUT) -Mtp
 INPUT = < input.txt
-SOURCE = counting_sort.pas
+SOURCE = losange.pas
 all: $(SOURCE)
 	$(COMPILER) $(FLAGS) $(SOURCE)
 run: all $(OUTPUT)
