@@ -8,14 +8,9 @@ begin
   nbetoiles := 1;
   facteur := 1;
   for i:=1 to n do begin
-    for j := 1 to nbespaces do begin
-      write(' ');
-    end;
+    write('':nbespaces);
     for j := 1 to nbetoiles do begin
       write('*')
-    end;
-    for j := 1 to nbespaces do begin
-      write(' ');
     end;
     if (i=(n div 2) + 1) then facteur := -1;
     nbespaces:= nbespaces + (facteur*-1);
