@@ -64,6 +64,7 @@ begin
   end;
   Writeln;
 end;
+
 BEGIN
   saisie(t, n )  ;
   Tri(t, 1, n);

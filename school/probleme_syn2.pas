@@ -10,6 +10,8 @@ begin
   div_par_11 := (a = 0); 
 end;
 
+
+
 BEGIN
   Writeln(div_par_11(12345));
 END.
