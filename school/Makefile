@@ -1,9 +1,9 @@
 COMPILER = fpc
 DEBUGGER = gdb
-OUTPUT = 3_2009
+OUTPUT = bac_2008_10H 
 FLAGS = -gl -o$(OUTPUT) -Mtp
 #INPUT = < input.txt
-SOURCE = 3_2009.pas
+SOURCE = bac_2008_10H.pas
 all: $(SOURCE)
 	$(COMPILER) $(FLAGS) $(SOURCE)
 run: all $(OUTPUT)
